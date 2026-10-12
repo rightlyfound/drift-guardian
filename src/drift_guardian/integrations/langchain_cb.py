@@ -11,6 +11,7 @@ from typing import Any, Optional
 try:
     from langchain_core.callbacks import BaseCallbackHandler
 except ImportError:  # pragma: no cover - exercised only without the extra
+
     class BaseCallbackHandler:  # type: ignore[no-redef]
         """Fallback that keeps the core package importable without LangChain."""
 

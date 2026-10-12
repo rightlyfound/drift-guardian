@@ -60,9 +60,7 @@ def main() -> None:
             expansion=1, contraction=0, fingerprint=f"fetch:{URL}"
         )
         print(f"↻ Retry {attempt}/4: {URL}")
-        audit_event(
-            "retry_attempt", attempt=attempt, url=URL, status=status.value
-        )
+        audit_event("retry_attempt", attempt=attempt, url=URL, status=status.value)
         if status is DriftStatus.LOOP:
             print_status(status, "LOOP DETECTED: Agent Halted")
             print("   Fallback: use cached content or queue the URL for later.")
