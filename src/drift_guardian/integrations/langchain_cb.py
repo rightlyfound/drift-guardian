@@ -30,11 +30,15 @@ class DriftGuardCallbackHandler(BaseCallbackHandler):
         usage = getattr(response, "llm_output", None) or {}
         tokens = usage.get("token_usage", {}).get("total_tokens", 1)
         fingerprint = kwargs.get("run_id")
-        self.sentinel.record_step(float(tokens), 1.0, str(fingerprint) if fingerprint else None)
+        self.sentinel.record_step(
+            float(tokens), 1.0, str(fingerprint) if fingerprint else None
+        )
 
     def on_chain_end(self, outputs: Any, **kwargs: Any) -> None:
         """Record a completed chain as one unit of contraction."""
-        fingerprint: Optional[str] = str(kwargs["run_id"]) if kwargs.get("run_id") else None
+        fingerprint: Optional[str] = (
+            str(kwargs["run_id"]) if kwargs.get("run_id") else None
+        )
         self.sentinel.record_step(1.0, 1.0, fingerprint)
 
     def current_status(self) -> DriftStatus:
