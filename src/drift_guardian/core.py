@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import math
 from collections import deque
 from enum import Enum
@@ -18,7 +19,7 @@ class DriftStatus(str, Enum):
     LOOP = "loop"
 
 
-Sample = Tuple[float, float, Optional[str]]
+Sample = Tuple[float, float, Optional[bytes]]
 
 
 class DriftSentinel:
@@ -65,7 +66,11 @@ class DriftSentinel:
         if expansion < 0 or contraction < 0:
             raise ValueError("expansion and contraction must be non-negative")
         with self._lock:
-            self._samples.append((expansion, contraction, fingerprint))
+            if fingerprint is None:
+                fp_bytes: Optional[bytes] = None
+            else:
+                fp_bytes = hashlib.sha256(fingerprint.encode("utf-8")).digest()
+            self._samples.append((expansion, contraction, fp_bytes))
             if self._has_loop():
                 self._status = DriftStatus.LOOP
                 return self._status
