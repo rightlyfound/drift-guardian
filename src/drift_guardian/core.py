@@ -86,7 +86,17 @@ class DriftSentinel:
         with self._lock:
             contraction = sum(sample[1] for sample in self._samples)
             total = sum(sample[0] + sample[1] for sample in self._samples)
-            return contraction / (total + self.epsilon) - self.baseline
+            epsilon = self.epsilon
+            if not (math.isfinite(contraction) and math.isfinite(total)):
+                # Valid finite samples can overflow when summed. Rescale so the
+                # ratio stays finite instead of collapsing to inf/inf = NaN.
+                scale = max(max(sample[0], sample[1]) for sample in self._samples)
+                contraction = sum(sample[1] / scale for sample in self._samples)
+                total = sum(
+                    sample[0] / scale + sample[1] / scale for sample in self._samples
+                )
+                epsilon = epsilon / scale
+            return contraction / (total + epsilon) - self.baseline
 
     def reset(self) -> None:
         """Clear all samples and return to ``OK``."""
