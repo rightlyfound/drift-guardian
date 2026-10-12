@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "drift-guardian"
-version = "0.1.0"
+version = "0.1.1"
 authors = [{ name = "Adam Rudnicki", email = "adam@rightlyfound.com" }]
 description = "Mathematical drift detection and loop prevention for AI agents and data pipelines"
 readme = "README.md"

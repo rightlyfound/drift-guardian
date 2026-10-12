@@ -2,6 +2,30 @@
 
 All notable changes to DriftGuard are documented here.
 
+## [0.1.1] - Unreleased
+
+### Security
+
+- **Audit logging is now opt-in.** `AdaptiveDriftSentinel(audit_path=...)`
+  defaults to `None`, so the library no longer writes `drift_audit.jsonl` into
+  the working directory by default.
+- **Safe audit writes.** Records are appended atomically (`O_APPEND` plus
+  `fsync`) under the sentinel lock with owner-only (`0600`) permissions on
+  POSIX. A missing parent directory raises `ValueError` at construction instead
+  of being created silently.
+
+### Fixed
+
+- `DriftSentinel.drift_margin()` returned `NaN` when valid finite samples
+  overflowed when summed (for example two `1e308` values). It now rescales and
+  returns a finite margin; results for normal inputs are unchanged.
+
+### Migration
+
+If you relied on the implicit `drift_audit.jsonl`, pass
+`audit_path="drift_audit.jsonl"` explicitly. Directories are no longer created
+for you.
+
 ## [0.1.0] - 2026-10-13
 
 DriftGuard 0.1.0 is the first public release: a small, deterministic safety
