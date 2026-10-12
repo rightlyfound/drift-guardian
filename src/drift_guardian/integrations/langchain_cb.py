@@ -19,7 +19,7 @@ except ImportError:  # pragma: no cover - exercised only without the extra
 from ..core import DriftSentinel, DriftStatus
 
 
-class DriftGuardCallbackHandler(BaseCallbackHandler):
+class DriftGuardCallbackHandler(BaseCallbackHandler):  # type: ignore[misc]
     """Record completed LLM and chain callbacks as reclaimed progress."""
 
     def __init__(self, sentinel: DriftSentinel) -> None:
