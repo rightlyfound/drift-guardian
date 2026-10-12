@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from threading import RLock
@@ -22,7 +23,7 @@ class AdaptiveDriftSentinel(DriftSentinel):
         learning_rate: float = 0.01,
         max_change: float = 0.02,
         cooldown: int = 100,
-        audit_path: str = "drift_audit.jsonl",
+        audit_path: Optional[str] = None,
         **kwargs: object,
     ) -> None:
         super().__init__(*args, **kwargs)  # type: ignore[arg-type]
@@ -33,7 +34,12 @@ class AdaptiveDriftSentinel(DriftSentinel):
         self.learning_rate = learning_rate
         self.max_change = max_change
         self.cooldown = cooldown
-        self.audit_path = Path(audit_path)
+        self.audit_path: Optional[Path] = None
+        if audit_path is not None:
+            path = Path(audit_path)
+            if not path.parent.exists():
+                raise ValueError(f"parent directory does not exist: {path.parent}")
+            self.audit_path = path
         self._total_samples = 0
         self._last_adaptation = -cooldown
         self._frozen = False
@@ -82,6 +88,8 @@ class AdaptiveDriftSentinel(DriftSentinel):
     def _write_audit(
         self, old: float, new: float, observed: float, reason: str
     ) -> None:
+        if self.audit_path is None:
+            return
         record = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "old_baseline": old,
@@ -89,7 +97,17 @@ class AdaptiveDriftSentinel(DriftSentinel):
             "observed_ratio": observed,
             "reason": reason,
         }
-        with self._lock:
-            self.audit_path.parent.mkdir(parents=True, exist_ok=True)
-            with self.audit_path.open("a", encoding="utf-8") as handle:
-                handle.write(json.dumps(record, sort_keys=True) + "\n")
+        line = (json.dumps(record, sort_keys=True) + "\n").encode("utf-8")
+        with self._adaptive_lock:
+            # O_APPEND makes each single write land at end-of-file; owner-only
+            # permissions apply on creation (best effort on non-POSIX systems).
+            fd = os.open(
+                self.audit_path,
+                os.O_WRONLY | os.O_APPEND | os.O_CREAT,
+                0o600,
+            )
+            try:
+                os.write(fd, line)
+                os.fsync(fd)
+            finally:
+                os.close(fd)
