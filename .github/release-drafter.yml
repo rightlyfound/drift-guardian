@@ -1,0 +1,43 @@
+name-template: 'DriftGuard $RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+change-template: '- $TITLE (#$NUMBER)'
+no-changes-template: '- No user-facing changes.'
+version-resolver:
+  major:
+    labels:
+      - 'breaking'
+      - 'major'
+  minor:
+    labels:
+      - 'enhancement'
+      - 'feature'
+  patch:
+    labels:
+      - 'bug'
+      - 'fix'
+      - 'documentation'
+  default: patch
+categories:
+  - title: '## Features'
+    labels:
+      - 'enhancement'
+      - 'feature'
+  - title: '## Fixes'
+    labels:
+      - 'bug'
+      - 'fix'
+  - title: '## Documentation'
+    labels:
+      - 'documentation'
+  - title: '## Maintenance'
+    label: 'chore'
+template: |
+  ## What changed
+
+  $CHANGES
+
+  ## Installation
+
+  ```bash
+  pip install drift-guardian==$RESOLVED_VERSION
+  ```

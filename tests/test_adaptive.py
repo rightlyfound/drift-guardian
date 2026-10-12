@@ -31,7 +31,11 @@ def test_adaptation_is_clamped_and_audited(tmp_path) -> None:
     assert 0.15 <= sentinel.baseline <= 0.60
     record = json.loads(path.read_text().splitlines()[0])
     assert set(record) == {
-        "timestamp", "old_baseline", "new_baseline", "observed_ratio", "reason"
+        "timestamp",
+        "old_baseline",
+        "new_baseline",
+        "observed_ratio",
+        "reason",
     }
 
 
