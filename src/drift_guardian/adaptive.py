@@ -73,9 +73,7 @@ class AdaptiveDriftSentinel(DriftSentinel):
         if self._total_samples - self._last_adaptation < self.cooldown:
             return
         with self._lock:
-            total = sum(sample[0] + sample[1] for sample in self._samples)
-            contractions = sum(sample[1] for sample in self._samples)
-            observed = contractions / (total + self.epsilon)
+            observed = self._contraction_ratio()
             old = self.baseline
             target = old + self.learning_rate * (observed - old)
             bounded = min(0.60, max(0.15, target))

@@ -19,6 +19,15 @@ All notable changes to DriftGuard are documented here.
 - `DriftSentinel.drift_margin()` returned `NaN` when valid finite samples
   overflowed when summed (for example two `1e308` values). It now rescales and
   returns a finite margin; results for normal inputs are unchanged.
+- The same overflow made `AdaptiveDriftSentinel` compute a `NaN`
+  `observed_ratio`, which was written to the audit file as `NaN`, which is not
+  valid JSON. Both paths now share one overflow-safe ratio calculation.
+
+### Added
+
+- Property-based invariant tests (`tests/test_invariants.py`, Hypothesis):
+  finite and bounded margins, window size, status/threshold consistency, loop
+  detection, adaptive baseline bounds and freeze, and strict-JSON audit records.
 
 ### Migration
 

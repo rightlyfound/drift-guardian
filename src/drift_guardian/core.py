@@ -84,6 +84,11 @@ class DriftSentinel:
     def drift_margin(self) -> float:
         """Return the exact rolling-window Drift Margin."""
         with self._lock:
+            return self._contraction_ratio() - self.baseline
+
+    def _contraction_ratio(self) -> float:
+        """Return ``sum(C) / (sum(E + C) + epsilon)`` for the current window."""
+        with self._lock:
             contraction = sum(sample[1] for sample in self._samples)
             total = sum(sample[0] + sample[1] for sample in self._samples)
             epsilon = self.epsilon
@@ -96,7 +101,7 @@ class DriftSentinel:
                     sample[0] / scale + sample[1] / scale for sample in self._samples
                 )
                 epsilon = epsilon / scale
-            return contraction / (total + epsilon) - self.baseline
+            return contraction / (total + epsilon)
 
     def reset(self) -> None:
         """Clear all samples and return to ``OK``."""
