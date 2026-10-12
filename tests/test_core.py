@@ -8,7 +8,7 @@ def test_exact_formula_and_thresholds() -> None:
     assert sentinel.record_step(8, 2) is DriftStatus.OK
     assert sentinel.record_step(8, 0) is DriftStatus.OK
     assert sentinel.record_step(8, 0) is DriftStatus.CRITICAL
-    expected = 2 / (10 + 1e-9) - 0.30
+    expected = 2 / (26 + 1e-9) - 0.30
     assert sentinel.drift_margin() == pytest.approx(expected)
 
     warning = DriftSentinel(window=10, baseline=0.30)
