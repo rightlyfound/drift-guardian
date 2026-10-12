@@ -25,7 +25,16 @@ Homepage = "https://github.com/rightlyfound/drift-guardian"
 [project.optional-dependencies]
 langchain = ["langchain-core>=0.1.0"]
 crewai = ["crewai>=0.30.0"]
-dev = ["pytest", "pytest-cov", "ruff", "black", "mypy", "pre-commit"]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "hypothesis",
+    "pytest-benchmark",
+    "ruff",
+    "black",
+    "mypy",
+    "pre-commit",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -36,6 +45,9 @@ drift_guardian = ["py.typed"]
 [tool.ruff]
 line-length = 88
 target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
 
 [tool.mypy]
 strict = true

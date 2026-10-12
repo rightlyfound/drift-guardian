@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import math
 from collections import deque
 from enum import Enum
-import math
 from threading import RLock
 from typing import Deque, Optional, Tuple
 

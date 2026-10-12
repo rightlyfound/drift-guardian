@@ -1,25 +1,25 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags: ["v*"]
 
 permissions:
   contents: read
   id-token: write
 
-env:
-  TWINE_USERNAME: __token__
-
 jobs:
   publish:
     runs-on: ubuntu-latest
     environment: pypi
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "3.12"
       - run: python -m pip install build
       - run: python -m build
       - uses: pypa/gh-action-pypi-publish@release/v1
