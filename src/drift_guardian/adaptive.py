@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
+import tempfile
 from threading import RLock
 from typing import Optional
 
@@ -22,7 +24,7 @@ class AdaptiveDriftSentinel(DriftSentinel):
         learning_rate: float = 0.01,
         max_change: float = 0.02,
         cooldown: int = 100,
-        audit_path: str = "drift_audit.jsonl",
+        audit_path: Optional[str] = None,
         **kwargs: object,
     ) -> None:
         super().__init__(*args, **kwargs)  # type: ignore[arg-type]
@@ -33,7 +35,7 @@ class AdaptiveDriftSentinel(DriftSentinel):
         self.learning_rate = learning_rate
         self.max_change = max_change
         self.cooldown = cooldown
-        self.audit_path = Path(audit_path)
+        self.audit_path = Path(audit_path) if audit_path is not None else None
         self._total_samples = 0
         self._last_adaptation = -cooldown
         self._frozen = False
@@ -82,6 +84,9 @@ class AdaptiveDriftSentinel(DriftSentinel):
     def _write_audit(
         self, old: float, new: float, observed: float, reason: str
     ) -> None:
+        if self.audit_path is None:
+            return
+
         record = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "old_baseline": old,
@@ -89,7 +94,24 @@ class AdaptiveDriftSentinel(DriftSentinel):
             "observed_ratio": observed,
             "reason": reason,
         }
-        with self._lock:
-            self.audit_path.parent.mkdir(parents=True, exist_ok=True)
-            with self.audit_path.open("a", encoding="utf-8") as handle:
-                handle.write(json.dumps(record, sort_keys=True) + "\n")
+
+        with self._adaptive_lock:
+            path = self.audit_path
+            if path is None:
+                return
+            path.parent.mkdir(parents=True, exist_ok=True)
+
+            fd, tmp_name = tempfile.mkstemp(
+                dir=str(path.parent),
+                prefix=f".{path.name}.",
+                suffix=".tmp",
+            )
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                    handle.write(json.dumps(record, sort_keys=True) + "\n")
+                    handle.flush()
+                    os.fsync(handle.fileno())
+                os.replace(tmp_name, path)
+            finally:
+                if os.path.exists(tmp_name):
+                    os.unlink(tmp_name)
