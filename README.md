@@ -42,9 +42,25 @@ if status is DriftStatus.LOOP or status is DriftStatus.CRITICAL:
 ## Adaptive mode
 
 `AdaptiveDriftSentinel` is opt-in and disabled by default. When enabled, it
-requires a minimum sample count, clamps baseline changes, enforces cooldown,
-and appends auditable JSONL records. Use `freeze_baseline()` for a permanent
-per-instance freeze.
+requires a minimum sample count, clamps baseline changes, and enforces cooldown.
+Use `freeze_baseline()` for a permanent per-instance freeze.
+
+Audit logging is also opt-in. By default the library writes nothing to disk. To
+record each baseline change, pass an explicit `audit_path`; the parent directory
+must already exist, otherwise construction raises `ValueError`:
+
+```python
+from drift_guardian import AdaptiveDriftSentinel
+
+sentinel = AdaptiveDriftSentinel(
+    enable_adaptive=True,
+    audit_path="/var/log/agent/drift_audit.jsonl",
+)
+```
+
+Each adaptation appends one JSON line to that file (`O_APPEND` plus `fsync`),
+so existing records are never overwritten. On POSIX systems the file is created
+with owner-only (`0600`) permissions.
 
 ## License
 
