@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "drift-guardian"
+version = "0.1.0"
+authors = [{ name = "Adam Rudnicki", email = "adam@rightlyfound.com" }]
+description = "Mathematical drift detection and loop prevention for AI agents and data pipelines"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Typing :: Typed",
+]
+keywords = ["ai", "agent", "monitoring", "drift", "safety", "llm"]
+
+[project.urls]
+Homepage = "https://github.com/rightlyfound/drift-guardian"
+"Bug Tracker" = "https://github.com/rightlyfound/drift-guardian/issues"
+
+[project.optional-dependencies]
+langchain = ["langchain-core>=0.1.0"]
+crewai = ["crewai>=0.30.0"]
+dev = ["pytest", "pytest-cov", "ruff", "black", "mypy", "pre-commit"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+drift_guardian = ["py.typed"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+
+[tool.mypy]
+strict = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["langchain_core.*", "crewai.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+addopts = "--cov=drift_guardian --cov-report=term-missing"
+testpaths = ["tests"]
